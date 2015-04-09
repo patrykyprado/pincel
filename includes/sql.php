@@ -109,6 +109,7 @@ function gerarSessaoUsuarioAdministrativo($idUsuario){
     $_SESSION['usuario_unidade'] = $dados_usuario['unidade'];
     $_SESSION['usuario_email'] = $dados_usuario['email'];
     $_SESSION['usuario_id'] = $dados_usuario['id_user'];
+    $_SESSION['menu'] = '';
 }
 
 /**
@@ -136,4 +137,68 @@ function gerarSessaoUsuarioAcademico($idUsuario){
     $_SESSION['usuario_unidade'] = $dados_usuario['unidade'];
     $_SESSION['usuario_email'] = $dados_usuario['email'];
     $_SESSION['usuario_id'] = $dados_usuario['id_user'];
+    $_SESSION['menu'] = '';
+}
+
+
+
+/**
+ * FUNÇÃO RESPONSÁVEL POR GERAR MENU DO USUÁRIO ATIVO
+ * @author Patryky Prado
+ */
+function gerarMenuUsuario($usuarioAcessos, $idUsuario){
+    global $conn_pincel;
+    $sql = 'SELECT * FROM ced_menu WHERE (acessos LIKE :usuarioAcessos OR id_pessoas LIKE :idUsuario) ORDER BY ordem';
+    $sql_executar = $conn_pincel->prepare($sql);
+    $sql_executar->execute(
+        array(
+            ':idUsuario' => $idUsuario,
+            ':usuarioAcessos' => $usuarioAcessos
+        )
+    );
+    return $sql_executar;
+}
+
+/**
+ * FUNÇÃO RESPONSÁVEL POR GERAR SUBMENU 1 DO USUÁRIO ATIVO
+ * @author Patryky Prado
+ */
+function gerarSubMenu1Usuario($usuarioAcessos, $idUsuario, $menuId){
+    global $conn_pincel;
+    $sql = 'SELECT * FROM ced_submenu
+  WHERE id_menu = :menuId AND id_submenu = 0
+  AND (acessos LIKE "%:usuarioAcessos%" OR id_pessoas LIKE "%:idUsuario%") ORDER BY ordem';
+    $sql_executar = $conn_pincel->prepare($sql);
+    $sql_executar->execute(
+        array(
+            ':idUsuario' => $idUsuario,
+            ':usuarioAcessos' => $usuarioAcessos,
+            ':menuId' => $menuId
+        )
+    );
+    return $sql_executar;
+}
+
+/**
+ * FUNÇÃO RESPONSÁVEL POR GERAR SUBMENU 2 DO USUÁRIO ATIVO
+ * @author Patryky Prado
+ */
+function gerarSubMenu2Usuario($usuarioAcessos, $idUsuario, $menuId, $submenuId)
+{
+    global $conn_pincel;
+    $sql = 'SELECT *
+FROM ced_submenu
+WHERE id_menu = :menuId AND id_submenu = :submenuId
+AND (acessos LIKE ":usuarioAcessos%" OR id_pessoas LIKE "%:idUsuario%")
+ORDER BY ordem';
+    $sql_executar = $conn_pincel->prepare($sql);
+    $sql_executar->execute(
+        array(
+            ':idUsuario' => $idUsuario,
+            ':usuarioAcessos' => $usuarioAcessos,
+            ':submenuId' => $submenuId,
+            ':menuId' => $menuId
+        )
+    );
+    return $sql_executar;
 }
